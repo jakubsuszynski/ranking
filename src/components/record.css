@@ -1,0 +1,16 @@
+.single-record {
+  width: 100%;
+  /*background-color: blue;*/
+  display: flex;
+  height:15vh;
+  -webkit-box-shadow: -2px 2px 7px 0px rgba(0,0,0,0.75);
+  -moz-box-shadow: -2px 2px 7px 0px rgba(0,0,0,0.75);
+  box-shadow: -2px 2px 7px 0px rgba(0,0,0,0.75);
+  justify-content: space-around;
+  align-items: center;
+  margin: 20px;
+}
+.material-icons {
+  font-family: 'Material Icons';
+  font-size: 24px;
+}
