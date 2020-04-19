@@ -1,10 +1,12 @@
 {
-  "name": "gatsby-starter-default",
+  "name": "ranking",
   "private": true,
-  "description": "A simple starter to get up and developing quickly with Gatsby",
+  "description": "Pages ranking",
   "version": "0.1.0",
-  "author": "Kyle Mathews <mathews.kyle@gmail.com>",
+  "author": "Jakub Suszynski <jakubesuszynski@gmail.com>",
   "dependencies": {
+    "@material-ui/core": "^4.9.11",
+    "@material-ui/icons": "^4.9.1",
     "bootstrap": "^4.4.1",
     "gatsby": "^2.20.12",
     "gatsby-image": "^2.3.1",

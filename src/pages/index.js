@@ -10,18 +10,23 @@ class IndexPage extends React.Component {
         loading: true,
         error: false,
         fetchedData: [],
-    }
+    };
 
     componentDidMount() {
-        fetch("http://dummy.restapiexample.com/api/v1/employees")
+        this.fetchPages()
+    }
+
+    fetchPages =() => {
+        fetch("https://firestore.googleapis.com/v1/projects/pagesranking-8d081/databases/(default)/documents/pages/")
             .then(response => {
                 return response.json()
             })
-            .then(data =>
-                this.setState({
-                    loading: false,
-                    fetchedData: data.data,
-                })
+            .then(data => {
+                    this.setState({
+                        loading: false,
+                        fetchedData: data.documents,
+                    });
+                }
             )
             .catch(error => {
                 console.log(error)
@@ -36,11 +41,13 @@ class IndexPage extends React.Component {
                 {this.state.loading ? (
                         <h1>Loading</h1>
                     ) :
-                    <>{
-                        this.state.fetchedData.map(char => (
-                            <Record singleRecord={char}></Record>
+                    <>
+                        {
+                        this.state.fetchedData.sort((r1, r2) => r2?.fields.votes.integerValue - r1?.fields.votes.integerValue).map(page => (
+                            <Record record={page} reloadPages={this.fetchPages}/>
                         ))
-                    }</>
+                    }
+                    </>
                 }
                 {/* <Link to="/page-2/">Go to page 2</Link> */}
             </Layout>

@@ -1,16 +1,24 @@
-.single-record {
-  width: 100%;
-  /*background-color: blue;*/
-  display: flex;
-  height:15vh;
-  -webkit-box-shadow: -2px 2px 7px 0px rgba(0,0,0,0.75);
-  -moz-box-shadow: -2px 2px 7px 0px rgba(0,0,0,0.75);
-  box-shadow: -2px 2px 7px 0px rgba(0,0,0,0.75);
-  justify-content: space-around;
-  align-items: center;
-  margin: 20px;
+.page-card {
+    display: flex;
+    margin: 15px;
+    justify-content: space-between;
+    height: 20vh;
 }
-.material-icons {
-  font-family: 'Material Icons';
-  font-size: 24px;
+.card-content{
+    display: flex;
+    width: 100%;
+    align-items: center;
+    justify-content: space-between;
+}
+.card-image{
+    width: 200px;
+}
+.card-votes{
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+}
+.like-button {
+    outline: 0 !important;
+    margin-left: 0.2rem;
 }
