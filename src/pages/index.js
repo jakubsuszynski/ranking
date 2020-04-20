@@ -4,6 +4,7 @@ import Layout from "../components/layout"
 import SEO from "../components/seo"
 import "bootstrap/dist/css/bootstrap.min.css"
 import Record from "../components/record"
+import SubmitPageModal from "../components/submitPageModal"
 
 class IndexPage extends React.Component {
     state = {
@@ -16,7 +17,7 @@ class IndexPage extends React.Component {
         this.fetchPages()
     }
 
-    fetchPages =() => {
+    fetchPages = () => {
         fetch("https://firestore.googleapis.com/v1/projects/pagesranking-8d081/databases/(default)/documents/pages/")
             .then(response => {
                 return response.json()
@@ -37,16 +38,16 @@ class IndexPage extends React.Component {
         return (
             <Layout>
                 <SEO title="Home"/>
-
+                <SubmitPageModal/>
                 {this.state.loading ? (
                         <h1>Loading</h1>
                     ) :
                     <>
                         {
-                        this.state.fetchedData.sort((r1, r2) => r2?.fields.votes.integerValue - r1?.fields.votes.integerValue).map(page => (
-                            <Record record={page} reloadPages={this.fetchPages}/>
-                        ))
-                    }
+                            this.state.fetchedData.sort((r1, r2) => r2?.fields.votes.integerValue - r1?.fields.votes.integerValue).map(page => (
+                                <Record record={page} reloadPages={this.fetchPages}/>
+                            ))
+                        }
                     </>
                 }
                 {/* <Link to="/page-2/">Go to page 2</Link> */}

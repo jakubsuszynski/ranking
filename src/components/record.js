@@ -39,11 +39,11 @@ class Record extends React.Component {
     render = () => {
         return (
             <Card className={"page-card"}>
-                <CardMedia
-                    className={"card-image"}
-                    image={this.props.record?.fields.imgUrl?.stringValue}
-                    title={this.props.record?.fields.title?.stringValue}
-                />
+                    <CardMedia
+                        className={"card-image"}
+                        image={this.props.record?.fields.imgUrl?.stringValue}
+                        title={this.props.record?.fields.title?.stringValue}
+                    />
                 <CardContent className={"card-content"}>
                     <div>
                         <Typography

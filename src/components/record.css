@@ -1,7 +1,7 @@
 .page-card {
     display: flex;
     margin: 15px;
-    justify-content: space-between;
+    /*justify-content: space-between;*/
     height: 20vh;
 }
 .card-content{
@@ -12,6 +12,9 @@
 }
 .card-image{
     width: 200px;
+}
+.image-wrapper {
+    /*wid*/
 }
 .card-votes{
     display: flex;

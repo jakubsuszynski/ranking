@@ -1,4 +1,5 @@
 module.exports = {
+    pathPrefix: "/ranking",
     siteMetadata: {
         title: `Pages ranking`,
         description: `Vote or submit you page`,
