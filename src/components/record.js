@@ -10,6 +10,9 @@ import FavoriteIcon from '@material-ui/icons/Favorite';
 class Record extends React.Component {
 
     vote = (id) => {
+        if (this.props.disabled) {
+            return
+        }
         const docUrl = "https://firestore.googleapis.com/v1/" + id;
         fetch(docUrl)
             .then(response => {
@@ -17,7 +20,9 @@ class Record extends React.Component {
             })
             .then(data => {
                 const currentVotes = data?.fields?.votes.integerValue;
-                this.requestVote(docUrl, currentVotes)
+                this.requestVote(docUrl, currentVotes);
+                this.props.userHaveVoted();
+                this.setVotedCookie()
             })
             .catch(error => {
                 console.log(error)
@@ -36,20 +41,27 @@ class Record extends React.Component {
             })
     };
 
+    setVotedCookie = () => {
+        let d = new Date();
+        d.setTime(d.getTime() + (1000 * 24 * 60 * 60 * 1000));
+        let expires = "expires=" + d.toUTCString();
+        document.cookie = "voted=true" + ";" + expires + ";path=/";
+    };
+
     render = () => {
         return (
             <Card className={"page-card"}>
-                    <CardMedia
-                        className={"card-image"}
-                        image={this.props.record?.fields.imgUrl?.stringValue}
-                        title={this.props.record?.fields.title?.stringValue}
-                    />
+                <CardMedia
+                    className={"card-image"}
+                    image={this.props.record?.fields.imgUrl?.stringValue}
+                    title={this.props.record?.fields.title?.stringValue}
+                />
                 <CardContent className={"card-content"}>
                     <div>
                         <Typography
                             component="h5"
                             variant="h5">
-                            {this.props.record?.fields.title?.stringValue}
+                            {this.props.index + ". " + this.props.record?.fields.title?.stringValue}
                         </Typography>
                         <Typography
                             variant="subtitle1"
@@ -62,8 +74,9 @@ class Record extends React.Component {
                         <IconButton
                             className={"like-button"}
                             color={"secondary"}
-                            onClick={() => this.vote(this.props.record?.name)}>
-                            <FavoriteIcon fontSize={"large"}/>
+                            onClick={() => this.vote(this.props.record?.name)}
+                            disabled={this.props.disabled}>
+                            <FavoriteIcon fontSize={"large"} disabled={true}/>
                         </IconButton>
                     </div>
                 </CardContent>
