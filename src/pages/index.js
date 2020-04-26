@@ -10,7 +10,8 @@ class IndexPage extends React.Component {
     state = {
         loading: true,
         error: false,
-        fetchedData: []
+        fetchedData: [],
+        pageVotedOn: undefined
     };
 
     componentDidMount() {
@@ -19,7 +20,7 @@ class IndexPage extends React.Component {
     }
 
     checkIfUserVoted = () => {
-        this.setState({haveUserVoted: !!this.getCookie("voted")})
+        this.setState({pageVotedOn: this.getCookie("votedOn")})
     };
 
     getCookie = (cname) => {
@@ -34,12 +35,6 @@ class IndexPage extends React.Component {
                 return c.substring(name.length, c.length);
             }
         }
-    };
-
-    userHaveVoted = () => {
-        this.setState({
-            haveUserVoted: true
-        })
     };
 
     fetchPages = () => {
@@ -60,7 +55,6 @@ class IndexPage extends React.Component {
     };
 
     render() {
-        let i = 0;
         return (
             <Layout>
                 <SEO title="Home"/>
@@ -72,15 +66,14 @@ class IndexPage extends React.Component {
                         {
                             this.state.fetchedData
                                 .sort((r1, r2) => r2?.fields.votes.integerValue - r1?.fields.votes.integerValue)
-                                .map(page => {
-                                    i++;
+                                .map((page, index) => {
                                     return <Record
-                                        key={i}
+                                        key={index}
                                         record={page}
-                                        reloadPages={this.fetchPages}
-                                        index={i}
-                                        disabled={this.state.haveUserVoted}
-                                        userHaveVoted={this.userHaveVoted}/>
+                                        currentVote={page.name === this.state.pageVotedOn}
+                                        index={index + 1}
+                                        disabled={!!this.state.pageVotedOn}
+                                        userVoted={(selectedPage) => this.setState({pageVotedOn: selectedPage})}/>
                                 })
                         }
                     </>

@@ -10,36 +10,51 @@ import CardMedia from "@material-ui/core/CardMedia";
 class Record extends React.Component {
     constructor(props) {
         super(props);
-        this.state = {url: this.prepareLink(this.props.record?.fields.url?.stringValue)}
+        this.state = {
+            url: this.prepareLink(this.props.record?.fields.url?.stringValue),
+            currentVotesNumber: Number(props.record?.fields.votes?.integerValue)
+        }
     }
 
-    vote = (id) => {
-        if (this.props.disabled) {
+    vote = () => {
+        if ((this.props.disabled && !this.props.currentVote) || this.state.votingInProgress) {
             return
         }
-        const docUrl = "https://firestore.googleapis.com/v1/" + id;
+        this.setState({votingInProgress: true});
+        const docUrl = "https://firestore.googleapis.com/v1/" + this.props.record?.name;
         fetch(docUrl)
             .then(response => {
                 return response.json()
             })
             .then(data => {
                 const currentVotes = data?.fields?.votes.integerValue;
-                this.requestVote(docUrl, currentVotes);
-                this.props.userHaveVoted();
-                this.setVotedCookie()
+                let direction;
+                if (this.props.currentVote) {
+                    direction = -1;
+                    this.removeVotedCookie();
+                    this.props.userVoted();
+                    this.requestVote(docUrl, Number(currentVotes), direction);
+                } else {
+                    direction = 1;
+                    this.setVotedCookie();
+                    this.props.userVoted(this.props.record.name);
+                    this.requestVote(docUrl, Number(currentVotes), direction);
+                }
             })
             .catch(error => {
                 console.log(error)
             })
     };
 
-
-    requestVote = (docUrl, currentVotes) => {
+    requestVote = (docUrl, currentVotes, direction) => {
         fetch(docUrl + "?updateMask.fieldPaths=votes", {
             method: "PATCH",
-            body: JSON.stringify({fields: {votes: {integerValue: Number(currentVotes) + 1}}})
+            body: JSON.stringify({fields: {votes: {integerValue: currentVotes + direction}}})
         })
-            .then(this.props.reloadPages)
+            .then(() => this.setState({
+                currentVotesNumber: this.state.currentVotesNumber + direction,
+                votingInProgress: false
+            }))
             .catch(errorVote => {
                 console.log(errorVote)
             })
@@ -49,7 +64,11 @@ class Record extends React.Component {
         let d = new Date();
         d.setTime(d.getTime() + (1000 * 24 * 60 * 60 * 1000));
         let expires = "expires=" + d.toUTCString();
-        document.cookie = "voted=true" + ";" + expires + ";path=/";
+        document.cookie = `votedOn=${this.props.record?.name}; ${expires};path=/`;
+    };
+
+    removeVotedCookie = () => {
+        document.cookie = `votedOn= ; expires = Thu, 01 Jan 1970 00:00:00 GMT;path=/`;
     };
 
     prepareLink = (url) => {
@@ -85,12 +104,12 @@ class Record extends React.Component {
                         </a>
                     </div>
                     <div className={"card-votes"}>
-                        <div>{this.props.record?.fields.votes?.integerValue}</div>
+                        <div>{this.state.currentVotesNumber}</div>
                         <IconButton
                             className={"like-button"}
                             color={"secondary"}
-                            onClick={() => this.vote(this.props.record?.name)}
-                            disabled={this.props.disabled}>
+                            onClick={() => this.vote()}
+                            disabled={this.props.currentVote ? false : this.props.disabled}>
                             <FavoriteIcon fontSize={isMobile ? "medium" : "large"} disabled={true}/>
                         </IconButton>
                     </div>
