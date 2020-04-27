@@ -5,6 +5,8 @@ import SEO from "../components/seo"
 import "bootstrap/dist/css/bootstrap.min.css"
 import Record from "../components/record"
 import SubmitPageModal from "../components/submitPageModal"
+import Snackbar from '@material-ui/core/Snackbar';
+import MuiAlert from '@material-ui/lab/Alert';
 
 class IndexPage extends React.Component {
     state = {
@@ -54,26 +56,52 @@ class IndexPage extends React.Component {
             })
     };
 
+    handleClose = (event, reason) => {
+        if (reason === 'clickaway') {
+            return;
+        }
+
+        this.setState({modalOpen: false});
+    };
+
+    showToast = (message, severity) => {
+        this.setState({
+            modalOpen: true,
+            toastMessage: message,
+            toastSeverity: severity
+        })
+    };
+
     render() {
         return (
             <Layout>
                 <SEO title="Home"/>
-                <SubmitPageModal/>
+                <Snackbar open={this.state.modalOpen} autoHideDuration={3000} onClose={this.handleClose}>
+                    <MuiAlert elevation={6} variant="filled" onClose={this.handleClose}
+                              severity={this.state.toastSeverity}>
+                        {this.state.toastMessage}
+                    </MuiAlert>
+                </Snackbar>
+                <SubmitPageModal openToast={this.showToast}/>
                 {this.state.loading ? (
                         <h1>Loading</h1>
                     ) :
                     <>
                         {
-                            this.state.fetchedData
+                            [...this.state.fetchedData]
                                 .sort((r1, r2) => r2?.fields.votes.integerValue - r1?.fields.votes.integerValue)
                                 .map((page, index) => {
                                     return <Record
                                         key={index}
                                         record={page}
                                         currentVote={page.name === this.state.pageVotedOn}
-                                        index={index + 1}
+                                        position={index + 1}
                                         disabled={!!this.state.pageVotedOn}
-                                        userVoted={(selectedPage) => this.setState({pageVotedOn: selectedPage})}/>
+                                        onUserVote={(direction, selectedPage) => {
+                                            page.fields.votes.integerValue = Number(page.fields.votes?.integerValue) + direction;
+                                            this.setState({pageVotedOn: selectedPage})
+                                        }}
+                                        openToast={this.showToast}/>
                                 })
                         }
                     </>

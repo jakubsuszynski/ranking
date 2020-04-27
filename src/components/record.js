@@ -11,8 +11,7 @@ class Record extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            url: this.prepareLink(this.props.record?.fields.url?.stringValue),
-            currentVotesNumber: Number(props.record?.fields.votes?.integerValue)
+            url: this.prepareLink(this.props.record?.fields.url?.stringValue)
         }
     }
 
@@ -32,17 +31,18 @@ class Record extends React.Component {
                 if (this.props.currentVote) {
                     direction = -1;
                     this.removeVotedCookie();
-                    this.props.userVoted();
+                    this.props.onUserVote(direction);
                     this.requestVote(docUrl, Number(currentVotes), direction);
                 } else {
                     direction = 1;
                     this.setVotedCookie();
-                    this.props.userVoted(this.props.record.name);
+                    this.props.onUserVote(direction, this.props.record.name);
                     this.requestVote(docUrl, Number(currentVotes), direction);
                 }
             })
             .catch(error => {
-                console.log(error)
+                console.log(error);
+                this.props.openToast("An error occured. Try again later", "error")
             })
     };
 
@@ -52,11 +52,11 @@ class Record extends React.Component {
             body: JSON.stringify({fields: {votes: {integerValue: currentVotes + direction}}})
         })
             .then(() => this.setState({
-                currentVotesNumber: this.state.currentVotesNumber + direction,
                 votingInProgress: false
             }))
             .catch(errorVote => {
-                console.log(errorVote)
+                console.log(errorVote);
+                this.props.openToast("An error occured. Try again later", "error");
             })
     };
 
@@ -94,7 +94,7 @@ class Record extends React.Component {
                         <a href={this.state.url} target="_blank">
                             <Typography
                                 variant={isMobile ? "h6" : "h5"}>
-                                {this.props.index + ". " + this.props.record?.fields.title?.stringValue}
+                                {this.props.position + ". " + this.props.record?.fields.title?.stringValue}
                             </Typography>
                             <Typography
                                 variant={isMobile ? "subtitle2" : "subtitle1"}
@@ -104,7 +104,7 @@ class Record extends React.Component {
                         </a>
                     </div>
                     <div className={"card-votes"}>
-                        <div>{this.state.currentVotesNumber}</div>
+                        <div>{this.props.record?.fields.votes?.integerValue}</div>
                         <IconButton
                             className={"like-button"}
                             color={"secondary"}

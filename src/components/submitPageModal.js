@@ -55,11 +55,12 @@ class SubmitPageModal extends React.Component {
             })
         })
             .then(response => {
-                console.log(response);
+                this.props.openToast("Page submitted", "success");
                 this.handleClose();
             })
             .catch(errorVote => {
-                console.log(errorVote)
+                console.log(errorVote);
+                this.props.openToast("An error occured. Try again later", "error")
             });
         return true;
     };
