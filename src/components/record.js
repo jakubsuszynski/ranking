@@ -51,13 +51,13 @@ class Record extends React.Component {
             method: "PATCH",
             body: JSON.stringify({fields: {votes: {integerValue: currentVotes + direction}}})
         })
-            .then(() => this.setState({
-                votingInProgress: false
-            }))
             .catch(errorVote => {
                 console.log(errorVote);
                 this.props.openToast("An error occured. Try again later", "error");
             })
+        this.setState({
+            votingInProgress: false
+        })
     };
 
     setVotedCookie = () => {
