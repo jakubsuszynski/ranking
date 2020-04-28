@@ -9,7 +9,7 @@ import React from "react"
 import PropTypes from "prop-types"
 import {useStaticQuery, graphql} from "gatsby"
 
-import Header from "./header"
+import Header from "../header/header"
 import "./layout.css"
 import AddIcon from "@material-ui/icons/Add";
 import Fab from "@material-ui/core/Fab";

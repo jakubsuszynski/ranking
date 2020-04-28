@@ -6,12 +6,14 @@ import Typography from "@material-ui/core/Typography";
 import IconButton from "@material-ui/core/IconButton";
 import FavoriteIcon from '@material-ui/icons/Favorite';
 import CardMedia from "@material-ui/core/CardMedia";
+import {Constants, Method, ToastType} from "../../common/Constants";
+import * as Utils from "../../common/Utils";
 
-class Record extends React.Component {
+class page extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            url: this.prepareLink(this.props.record?.fields.url?.stringValue)
+            url: Utils.prepareUrl(this.props.page?.url)
         }
     }
 
@@ -20,62 +22,49 @@ class Record extends React.Component {
             return
         }
         this.setState({votingInProgress: true});
-        const docUrl = "https://firestore.googleapis.com/v1/" + this.props.record?.name;
+
+        // direct url to page user votes on
+        const docUrl = Constants.firebaseUrl + this.props.page?.name;
+
+        // fetch current votes number
         fetch(docUrl)
             .then(response => {
                 return response.json()
             })
             .then(data => {
                 const currentVotes = data?.fields?.votes.integerValue;
+                //increment or decrement if user voted on this page already
                 let direction;
                 if (this.props.currentVote) {
                     direction = -1;
-                    this.removeVotedCookie();
+                    Utils.removeVotedCookie();
                     this.props.onUserVote(direction);
                     this.requestVote(docUrl, Number(currentVotes), direction);
                 } else {
                     direction = 1;
-                    this.setVotedCookie();
-                    this.props.onUserVote(direction, this.props.record.name);
+                    Utils.setVotedCookie(this.props.page?.name);
+                    this.props.onUserVote(direction, this.props.page.name);
                     this.requestVote(docUrl, Number(currentVotes), direction);
                 }
             })
             .catch(error => {
                 console.log(error);
-                this.props.openToast("An error occured. Try again later", "error")
+                this.props.openToast(Constants.genericError, ToastType.error)
             })
     };
 
     requestVote = (docUrl, currentVotes, direction) => {
-        fetch(docUrl + "?updateMask.fieldPaths=votes", {
-            method: "PATCH",
+        fetch(`${docUrl}${Constants.updateMask}`, {
+            method: Method.patch,
             body: JSON.stringify({fields: {votes: {integerValue: currentVotes + direction}}})
         })
             .catch(errorVote => {
                 console.log(errorVote);
-                this.props.openToast("An error occured. Try again later", "error");
-            })
+                this.props.openToast(Constants.genericError, ToastType.error);
+            });
         this.setState({
             votingInProgress: false
         })
-    };
-
-    setVotedCookie = () => {
-        let d = new Date();
-        d.setTime(d.getTime() + (1000 * 24 * 60 * 60 * 1000));
-        let expires = "expires=" + d.toUTCString();
-        document.cookie = `votedOn=${this.props.record?.name}; ${expires};path=/`;
-    };
-
-    removeVotedCookie = () => {
-        document.cookie = `votedOn= ; expires = Thu, 01 Jan 1970 00:00:00 GMT;path=/`;
-    };
-
-    prepareLink = (url) => {
-        if (url && !url.includes("http")) {
-            return "http://" + url;
-        }
-        return url;
     };
 
     render = () => {
@@ -85,8 +74,8 @@ class Record extends React.Component {
                 <div>
                     <CardMedia
                         className={"card-image"}
-                        image={this.props.record?.fields.imgUrl?.stringValue}
-                        title={this.props.record?.fields.title?.stringValue}
+                        image={this.props.page?.imgUrl}
+                        title={this.props.page?.title}
                     />
                 </div>
                 <CardContent className={"card-content-wrapper"}>
@@ -94,17 +83,17 @@ class Record extends React.Component {
                         <a href={this.state.url} target="_blank">
                             <Typography
                                 variant={isMobile ? "h6" : "h5"}>
-                                {this.props.position + ". " + this.props.record?.fields.title?.stringValue}
+                                {this.props.position + ". " + this.props.page?.title}
                             </Typography>
                             <Typography
                                 variant={isMobile ? "subtitle2" : "subtitle1"}
                                 color="textSecondary">
-                                {this.props.record?.fields.url?.stringValue}
+                                {this.props.page?.url}
                             </Typography>
                         </a>
                     </div>
                     <div className={"card-votes"}>
-                        <div>{this.props.record?.fields.votes?.integerValue}</div>
+                        <div>{this.props.page?.votes}</div>
                         <IconButton
                             className={"like-button"}
                             color={"secondary"}
@@ -119,4 +108,4 @@ class Record extends React.Component {
     }
 }
 
-export default Record
+export default page

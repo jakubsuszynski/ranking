@@ -3,7 +3,7 @@ module.exports = {
     siteMetadata: {
         title: `Pages ranking`,
         description: `Vote or submit you page`,
-        author: `@jsuszynski`,
+        author: `@jakubsuszynski`,
     },
     plugins: [
         `gatsby-plugin-react-helmet`,

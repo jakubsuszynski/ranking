@@ -1,12 +1,14 @@
 import React from "react"
 
-import Layout from "../components/layout"
-import SEO from "../components/seo"
+import Layout from "../components/layout/layout"
+import SEO from "../components/seo/seo"
 import "bootstrap/dist/css/bootstrap.min.css"
-import Record from "../components/record"
-import SubmitPageModal from "../components/submitPageModal"
+import Record from "../components/record/record"
+import SubmitPageModal from "../components/submitPageModal/submitPageModal"
 import Snackbar from '@material-ui/core/Snackbar';
 import MuiAlert from '@material-ui/lab/Alert';
+import {Constants, ToastType} from "../common/Constants";
+import * as Utils from "../common/Utils";
 
 class IndexPage extends React.Component {
     state = {
@@ -18,55 +20,32 @@ class IndexPage extends React.Component {
 
     componentDidMount() {
         this.checkIfUserVoted();
-        this.fetchPages()
+        Utils.fetchPages((pages) => {
+            this.setState({
+                loading: false,
+                fetchedData: pages
+            });
+        }, () => {
+            this.showToast(Constants.generateClassName, ToastType.error)
+        })
     }
 
     checkIfUserVoted = () => {
-        this.setState({pageVotedOn: this.getCookie("votedOn")})
+        this.setState({pageVotedOn: Utils.getCookie(Constants.cookieName)})
     };
 
-    getCookie = (cname) => {
-        var name = cname + "=";
-        var ca = document.cookie.split(';');
-        for (var i = 0; i < ca.length; i++) {
-            var c = ca[i];
-            while (c.charAt(0) == ' ') {
-                c = c.substring(1);
-            }
-            if (c.indexOf(name) == 0) {
-                return c.substring(name.length, c.length);
-            }
-        }
-    };
-
-    fetchPages = () => {
-        fetch("https://firestore.googleapis.com/v1/projects/pagesranking-8d081/databases/(default)/documents/pages/")
-            .then(response => {
-                return response.json()
-            })
-            .then(data => {
-                    this.setState({
-                        loading: false,
-                        fetchedData: data.documents,
-                    });
-                }
-            )
-            .catch(error => {
-                console.log(error)
-            })
-    };
 
     handleClose = (event, reason) => {
         if (reason === 'clickaway') {
             return;
         }
 
-        this.setState({modalOpen: false});
+        this.setState({toastOpen: false});
     };
 
     showToast = (message, severity) => {
         this.setState({
-            modalOpen: true,
+            toastOpen: true,
             toastMessage: message,
             toastSeverity: severity
         })
@@ -76,7 +55,7 @@ class IndexPage extends React.Component {
         return (
             <Layout>
                 <SEO title="Home"/>
-                <Snackbar open={this.state.modalOpen} autoHideDuration={3000} onClose={this.handleClose}>
+                <Snackbar open={this.state.toastOpen} autoHideDuration={3000} onClose={this.handleClose}>
                     <MuiAlert elevation={6} variant="filled" onClose={this.handleClose}
                               severity={this.state.toastSeverity}>
                         {this.state.toastMessage}
@@ -89,16 +68,16 @@ class IndexPage extends React.Component {
                     <>
                         {
                             [...this.state.fetchedData]
-                                .sort((r1, r2) => r2?.fields.votes.integerValue - r1?.fields.votes.integerValue)
+                                .sort((r1, r2) => r2?.votes - r1?.votes)
                                 .map((page, index) => {
                                     return <Record
                                         key={index}
-                                        record={page}
+                                        page={page}
                                         currentVote={page.name === this.state.pageVotedOn}
                                         position={index + 1}
                                         disabled={!!this.state.pageVotedOn}
                                         onUserVote={(direction, selectedPage) => {
-                                            page.fields.votes.integerValue = Number(page.fields.votes?.integerValue) + direction;
+                                            page.votes = Number(page.votes) + direction;
                                             this.setState({pageVotedOn: selectedPage})
                                         }}
                                         openToast={this.showToast}/>

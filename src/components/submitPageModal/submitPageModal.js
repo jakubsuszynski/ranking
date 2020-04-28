@@ -9,6 +9,8 @@ import DialogContent from '@material-ui/core/DialogContent';
 import DialogContentText from '@material-ui/core/DialogContentText';
 import DialogTitle from '@material-ui/core/DialogTitle';
 import Button from '@material-ui/core/Button';
+import {Constants, ToastType} from "../../common/Constants";
+import * as Utils from "../../common/Utils";
 
 class SubmitPageModal extends React.Component {
 
@@ -30,45 +32,20 @@ class SubmitPageModal extends React.Component {
     handleClose = () => {
         this.setState({open: false})
     };
-    handlePageSubmit = () => {
-        return this.validateFields() ? false : this.sendRequest();
-    };
 
-    sendRequest = () => {
-        fetch("https://firestore.googleapis.com/v1/projects/pagesranking-8d081/databases/(default)/documents/submissions/", {
-            method: "POST",
-            body: JSON.stringify({
-                fields: {
-                    title: {
-                        stringValue: this.state.title
-                    },
-                    url: {
-                        stringValue: this.state.address
-                    },
-                    imgUrl: {
-                        stringValue: this.state.img
-                    },
-                    dateOfSubmission: {
-                        stringValue: new Date().toLocaleString()
-                    }
-                }
-            })
-        })
-            .then(response => {
-                this.props.openToast("Page submitted", "success");
+    handlePageSubmit = () => {
+        return this.validateFields() ? false : Utils.submitPage(
+            () => {
+                this.props.openToast(Constants.pageSubmitted, ToastType.success);
                 this.handleClose();
-            })
-            .catch(errorVote => {
-                console.log(errorVote);
-                this.props.openToast("An error occured. Try again later", "error")
-            });
-        return true;
+            },
+            () => this.props.openToast(Constants.genericError, ToastType.error));
     };
 
     validateFields() {
-        if (!this.state.title || this.state.title === "") {
+        if (Utils.isNotEmpty(this.state.title)) {
             this.setState({
-                titleErrorText: "Title cannot be empty",
+                titleErrorText: Constants.titleCantBeEmpty,
                 titleError: true
             });
             return true;
@@ -78,9 +55,9 @@ class SubmitPageModal extends React.Component {
                 titleErrorText: undefined
             });
         }
-        if (!this.state.address || this.state.address === "") {
+        if (Utils.isNotEmpty(this.state.address)) {
             this.setState({
-                addressErrorText: "Address cannot be empty",
+                addressErrorText: Constants.addressCantBeEmpty,
                 addressError: true
             });
             return true;
@@ -91,18 +68,15 @@ class SubmitPageModal extends React.Component {
             })
         }
 
-        if (!this.state.img || this.state.img === "") {
+        if (Utils.isNotEmpty(this.state.img)) {
             this.setState({
-                imgErrorText: "Image address cannot be empty",
+                imgErrorText: Constants.imageCantBeEmpty,
                 imgError: true
             });
             return true;
-        } else if (!this.state.img.includes(".png")
-            && !this.state.img.includes(".jpg")
-            && !this.state.img.includes(".jpeg")
-            && !this.state.img.includes(".gif")) {
+        } else if (Utils.isImage(this.state.img)) {
             this.setState({
-                imgErrorText: "Image must end up with .jpg, .jpeg, .png or .gif format",
+                imgErrorText: Constants.imageFormatError,
                 imgError: true
             });
             return true;
@@ -132,7 +106,7 @@ class SubmitPageModal extends React.Component {
                             autoFocus
                             margin="dense"
                             id="title"
-                            label="Title"
+                            label={Constants.title}
                             type="text"
                             fullWidth
                             error={this.state.titleError}
@@ -145,7 +119,7 @@ class SubmitPageModal extends React.Component {
                             autoFocus
                             margin="dense"
                             id="url"
-                            label="Page Address"
+                            label={Constants.pageAddress}
                             type="text"
                             fullWidth
                             error={this.state.addressError}
@@ -158,7 +132,7 @@ class SubmitPageModal extends React.Component {
                             autoFocus
                             margin="dense"
                             id="img"
-                            label="Image URL"
+                            label={Constants.imageUrl}
                             type="text"
                             fullWidth
                             error={this.state.imgError}
